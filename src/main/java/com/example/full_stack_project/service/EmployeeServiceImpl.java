@@ -5,6 +5,7 @@ import com.example.full_stack_project.model.Employee;
 import com.example.full_stack_project.repository.EmployeeRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -30,12 +31,24 @@ public class EmployeeServiceImpl implements EmployeeService {
   @Override
   public List<Employee> getEmployee() {
     List<EmployeeEntity> employeeEntities = employeeRepository.findAll();
-    List<Employee> employees = new ArrayList<>();
-    for (EmployeeEntity employeeEntity : employeeEntities) {
-      Employee employee = new Employee();
-      BeanUtils.copyProperties(employeeEntity, employee);
-      employees.add(employee);
+
+     return employeeEntities
+        .stream()
+        .map(emp ->
+            new Employee(emp.getEmpId(),
+                emp.getFirstName(),
+                emp.getLastName(),
+                emp.getEmail()))
+         .toList();
+  }
+
+  @Override
+  public boolean deleteEmployee(Long empId) {
+    EmployeeEntity employeeEntity = employeeRepository.findById(empId).get();
+    if (employeeEntity != null) {
+      employeeRepository.delete(employeeEntity);
+      return true;
     }
-    return employees;
+    return false;
   }
 }
