@@ -5,8 +5,10 @@ import com.example.full_stack_project.model.Employee;
 import com.example.full_stack_project.repository.EmployeeRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -50,5 +52,39 @@ public class EmployeeServiceImpl implements EmployeeService {
       return true;
     }
     return false;
+  }
+
+  @Override
+  public Optional<Employee> getEmployeeById(Long id) {
+    Optional<EmployeeEntity> employeeEntity = employeeRepository.findById(id);
+    if (employeeEntity.isPresent()) {
+      Employee employee = new Employee();
+      BeanUtils.copyProperties(employeeEntity.get(), employee);
+      return Optional.of(employee);
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Employee updateEmployee(Long id, Employee employee) {
+    Optional<EmployeeEntity> employeeEntityOptional = employeeRepository.findById(id);
+    if(employeeEntityOptional.isPresent()){
+      EmployeeEntity employeeEntity = employeeEntityOptional.get();
+      if(employee.getFirstName() != null) {
+        employeeEntity.setFirstName(employee.getFirstName());
+      }
+      if(employee.getLastName() != null) {
+        employeeEntity.setLastName(employee.getLastName());
+      }
+      if(employee.getEmail() != null) {
+        employeeEntity.setEmail(employee.getEmail());
+      }
+      EmployeeEntity updatedEmployeeEntity = employeeRepository.save(employeeEntity);
+      Employee updatedEmployee = new Employee();
+      BeanUtils.copyProperties(updatedEmployeeEntity, updatedEmployee);
+      return updatedEmployee;
+    }
+    return null;
   }
 }
